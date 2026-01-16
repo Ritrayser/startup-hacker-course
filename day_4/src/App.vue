@@ -332,4 +332,26 @@ h3 {
   background: #28a745;
   color: white;
 }
+
+/* 18+ и галочка СЛЕВА */
+.input-group:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;  /* Отступ между текстом и галочкой */
+}
+
+.input-group:has(input[type="checkbox"]) input[type="checkbox"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  order: -1;  /* Галочка ПЕРЕД текстом (слева) */
+}
+
+/* Кнопки ПО ЦЕНТРУ */
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;  /* ← ЦЕНТР */
+  margin-top: 20px;
+}
 </style>
