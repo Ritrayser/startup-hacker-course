@@ -225,7 +225,7 @@ const resetRatings = () => {
 </template>
 
 <style>
-/* твои стили без изменений */
+
 .app {
   max-width: 1000px;
   margin: 0 auto;
@@ -460,5 +460,27 @@ h3 {
 .form-buttons button:last-child {
   background: #28a745;
   color: white;
+}
+
+/* 18+ и галочка СЛЕВА */
+.input-group:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;  /* Отступ между текстом и галочкой */
+}
+
+.input-group:has(input[type="checkbox"]) input[type="checkbox"] {
+  margin: 0;
+  width: 18px;
+  height: 18px;
+  order: -1;  /* Галочка перед текстом */
+}
+
+/* Кнопки ПО ЦЕНТРУ */
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;  /* ← Выровнил по центру */
+  margin-top: 20px;
 }
 </style>
