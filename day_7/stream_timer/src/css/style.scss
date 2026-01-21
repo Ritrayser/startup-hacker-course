@@ -1,0 +1,143 @@
+$glow-green: rgba(0, 255, 136, 0.4);
+$live-red: rgba(255, 68, 85, 0.6);
+$dark-bg: #0f0f23;
+
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.timer {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+    linear-gradient(135deg, $dark-bg 0%, #000 100%);
+  font-family: 'Courier New', monospace;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.timer__display {
+  background: rgba(15, 15, 35, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 3rem 4rem;
+  border-radius: 24px;
+  border: 2px solid $glow-green;
+  box-shadow: 0 0 60px $glow-green;
+  text-align: center;
+  min-width: 650px;
+  max-width: 95vw;
+  transition: all 0.6s ease;
+
+  &--live {
+    border-color: #ff4455;
+    box-shadow: 0 0 120px $live-red;
+    transform: scale(1.02);
+  }
+}
+
+.timer__status {
+  font-size: 2rem;
+  font-weight: 700;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  &:not(&--live) {
+    background: rgba(0, 255, 136, 0.15);
+    color: #00ff88;
+    border: 2px solid $glow-green;
+    box-shadow: 0 0 20px $glow-green;
+  }
+
+  &--live {
+    background: rgba(255, 68, 85, 0.25);
+    color: #ff4455;
+    border: 2px solid $live-red;
+    box-shadow: 0 0 30px $live-red;
+    animation: pulse 2s infinite;
+  }
+}
+
+
+.timer__countdown {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.1rem;
+}
+
+// Равенство всех элементов
+.timer__unit,
+.timer__separator {
+  flex: 1;
+  max-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+// Двоеточия
+.timer__separator {
+  font-size: 3.8rem;
+  color: rgba(0, 255, 136, 0.8);
+  font-weight: 400;
+  height: 7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  padding: 0;
+}
+
+// Цифры
+.timer__number {
+  font-size: 3.8rem;
+  font-weight: 900;
+  line-height: 1;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #00ff88, #00cc66);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 25px rgba(0, 255, 136, 0.5);
+}
+
+// Подписи под цифрами
+.timer__label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 0.3rem;
+  font-weight: 500;
+  text-transform: lowercase;
+  min-height: 1.2rem;
+}
+
+// Анимация
+@keyframes pulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
