@@ -106,7 +106,6 @@ const handleHoverEnter = (bookId, star) => {
   </div>
 </template>
 
-
 <style>
 .app {
   max-width: 1000px;
@@ -166,7 +165,29 @@ h3 {
   color: #f1c40f;
 }
 
-/* добавил стили только для новых фич */
+/* СТИЛИ ДЛЯ 18+ С ГАЛОЧКОЙ СПРАВА */
+.age-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.age-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #3498db;
+  flex-shrink: 0;
+}
+
+.age-checkbox label {
+  margin: 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
 .stats {
   background: #f8f9fa;
   padding: 15px;

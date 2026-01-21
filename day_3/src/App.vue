@@ -1,184 +1,58 @@
-<script setup>
-import { ref, computed } from 'vue'
-
-// по конспекту: ref для реактивности
-const books = ref([
-  { id: 1, title: 'Властелин колец', desc: 'Эпическая сага', genre: 'Фэнтези', adult: false, rating: 0 },
-  { id: 2, title: '1984', desc: 'Антиутопия', genre: 'Антиутопия', adult: true, rating: 0 },
-  { id: 3, title: 'Чистый код', desc: 'Как писать код', genre: 'Разработка', adult: false, rating: 0 },
-  { id: 4, title: 'Дюна', desc: 'Космическая эпопея', genre: 'Sci-Fi', adult: false, rating: 0 },
-  { id: 5, title: 'Гарри Поттер', desc: 'Школа волшебников', genre: 'Фэнтези', adult: false, rating: 0 }
-])
-
-// сделал форму по конспекту день 3
-const showForm = ref(false)
-const editingBookId = ref(null)
-const formData = ref({
-  title: '',
-  desc: '',
-  genre: '',
-  adult: false
-})
-
-// для звездочек hover (день 3 события)
-const hoverBookId = ref(null)
-const hoverRating = ref(0)
-
-// посчитал статистику (computed из конспекта)
-const totalBooks = computed(() => books.value.length)
-const averageRating = computed(() => {
-  if (!books.value.length) return 0
-  const sum = books.value.reduce((acc, book) => acc + book.rating, 0)
-  return (sum / books.value.length).toFixed(1)
-})
-
-// функция для цвета обложки
-const getCoverColor = (id) => {
-  const colors = ['#4A90E2', '#E74C3C', '#2ECC71', '#F39C12', '#9B59B6']
-  return colors[(id - 1) % 5]
-}
-
-// ставлю рейтинг по клику (день 3 @click)
-const setRating = (book, stars) => {
-  book.rating = stars
-}
-
-// hover для звездочек
-const starEnter = (bookId, stars) => {
-  hoverBookId.value = bookId
-  hoverRating.value = stars
-}
-
-const starLeave = () => {
-  hoverBookId.value = null
-  hoverRating.value = 0
-}
-
-// открываю форму (день 3 события)
-const openAddForm = () => {
-  editingBookId.value = null
-  formData.value = { title: '', desc: '', genre: '', adult: false }
-  showForm.value = true
-}
-
-const openEditForm = (book) => {
-  editingBookId.value = book.id
-  formData.value = { 
-    title: book.title, 
-    desc: book.desc, 
-    genre: book.genre, 
-    adult: book.adult 
-  }
-  showForm.value = true
-}
-
-// сохраняю форму (день 3 v-model + @submit.prevent)  
-const saveBook = () => {
-  if (!formData.value.title.trim()) return
-  
-  if (editingBookId.value) {
-    // редактирую
-    const bookIndex = books.value.findIndex(b => b.id === editingBookId.value)
-    if (bookIndex !== -1) {
-      books.value[bookIndex].title = formData.value.title
-      books.value[bookIndex].desc = formData.value.desc
-      books.value[bookIndex].genre = formData.value.genre
-      books.value[bookIndex].adult = formData.value.adult
-    }
-  } else {
-    // добавляю новую
-    books.value.push({
-      id: Date.now(),
-      title: formData.value.title,
-      desc: formData.value.desc,
-      genre: formData.value.genre,
-      adult: formData.value.adult,
-      rating: 0
-    })
-  }
-  
-  showForm.value = false
-}
-
-const closeForm = () => {
-  showForm.value = false
-}
-
-// удаление (просто @click)
-const removeBook = (book) => {
-  if (confirm(`Точно удалить "${book.title}"?`)) {
-    books.value = books.value.filter(b => b.id !== book.id)
-  }
-}
-
-// сбрасываю все рейтинги
-const resetRatings = () => {
-  if (confirm('Обнулить все рейтинги?')) {
-    books.value.forEach(book => book.rating = 0)
-  }
-}
-</script>
-
 <template>
   <div class="app">
-    <!-- добавил статистику -->
+    <!-- Статистика -->
     <div v-if="totalBooks" class="stats">
       <span>Книг: {{ totalBooks }}</span>
       <span>Рейтинг: {{ averageRating }}</span>
       <button @click="resetRatings" class="reset-btn">Сбросить все</button>
     </div>
-    
+
     <h1>📚 Мои книги ({{ totalBooks }})</h1>
-    
-    <!-- кнопка добавления -->
+
+    <!-- Кнопка добавления -->
     <button @click="openAddForm" class="add-book-btn">➕ Добавить</button>
-    
-    <!-- по конспекту: v-for с :key -->
+
+    <!-- Список книг -->
     <div class="books">
       <div v-for="book in books" :key="book.id" class="book">
-        
-        <!-- цветная обложка -->
-        <div class="cover" :style="'background: ' + getCoverColor(book.id)">
-          <!-- большая звездочка с рейтингом (день 3 :class) -->
+        <!-- Обложка: URL или цветной фон -->
+        <div class="cover" :style="{ backgroundImage: getCoverColor(book.cover_url, book.id) }">
+         <div v-if="!book.cover_url" class="cover-placeholder">
+            📚
+          </div>
+          <!-- Большая звездочка с рейтингом -->
           <div class="big-star" :class="{ empty: !book.rating }">
             {{ book.rating || '-' }}
           </div>
         </div>
-        
-        <!-- инфа о книге -->
+
+        <!-- Информация о книге -->
         <div class="info">
           <h3>{{ book.title }}</h3>
           <p>{{ book.desc }}</p>
           <div class="meta">
-            <span class="genre">{{ book.genre }}</span>
-            <!-- по конспекту: v-if -->
+            <span v-for="genreId in book.genres" :key="genreId" class="genre">
+              {{genres.find(g => g.id === genreId)?.name}}
+            </span>
             <span v-if="book.adult" class="adult">18+</span>
           </div>
-          
-          <!-- звездочки которые кликаются (день 3 @click + :class) -->
+
+          <!-- Интерактивные звездочки -->
           <div class="rating-stars">
-            <span 
-              v-for="star in 5" 
-              :key="star"
-              class="star"
-              :class="{ 
-                active: star <= book.rating || (hoverBookId === book.id && star <= hoverRating),
-                inactive: star > book.rating || (hoverBookId === book.id && star > hoverRating)
-              }"
-              @click="setRating(book, star)"
-              @mouseenter="starEnter(book.id, star)"
-              @mouseleave="starLeave"
-            >
+            <span v-for="star in 5" :key="star" class="star" :class="{
+              active: star <= book.rating || (hoverBookId === book.id && star <= hoverRating),
+              inactive: star > book.rating || (hoverBookId === book.id && star > hoverRating)
+            }" @click="setRating(book, star)" @mouseenter="starEnter(book.id, star)" @mouseleave="starLeave">
               ⭐
             </span>
           </div>
-          
-          <!-- текущее значение рейтинга -->
+
+          <!-- Текущее значение рейтинга -->
           <div class="rating-num" :class="{ 'rated': book.rating }">
             {{ book.rating }}/5
           </div>
-          
-          <!-- кнопки -->
+
+          <!-- Кнопки действий -->
           <div class="book-actions">
             <button @click="openEditForm(book)" class="edit-btn">Изменить</button>
             <button @click="removeBook(book)" class="delete-btn">Удалить</button>
@@ -187,33 +61,42 @@ const resetRatings = () => {
       </div>
     </div>
 
-    <!-- форма (день 3 v-model везде) -->
+    <!-- Модальная форма -->
     <div v-if="showForm" class="form-overlay" @click.self="closeForm">
       <div class="form-box">
         <h3>{{ editingBookId ? 'Править книгу' : 'Новая книга' }}</h3>
-        
+
         <form @submit.prevent="saveBook">
           <div class="input-group">
             <label>Название книги</label>
             <input v-model="formData.title" required>
           </div>
-          
+
           <div class="input-group">
-            <label>Описание</label>
-            <textarea v-model="formData.desc" rows="3"></textarea>
+            <label>Обложка (URL)</label>
+            <input v-model="formData.cover_url" type="url" placeholder="https://example.com/cover.jpg">
+            <div v-if="formData.cover_url" class="cover-preview">
+              <img :src="formData.cover_url" alt="Preview" class="preview-img">
+            </div>
           </div>
-          
+
           <div class="input-group">
-            <label>Жанр</label>
-            <input v-model="formData.genre">
+            <label>Жанры (Ctrl+Click для нескольких)</label>
+            <select v-model="formData.genre_ids" multiple size="6" class="genre-select">
+              <option v-for="genre in genres" :key="genre.id" :value="genre.id">
+                {{ genre.name }}
+              </option>
+            </select>
           </div>
-          
+
+          <!-- ИСПРАВЛЕННАЯ ГАЛОЧКА 18+ -->
           <div class="input-group">
-            <label>
-              <input type="checkbox" v-model="formData.adult"> 18+
-            </label>
+            <div class="age-checkbox">
+              <label>18+</label>
+              <input type="checkbox" v-model="formData.adult">
+            </div>
           </div>
-          
+
           <div class="form-buttons">
             <button type="button" @click="closeForm">Отмена</button>
             <button type="submit">{{ editingBookId ? 'Сохранить' : 'Добавить' }}</button>
@@ -224,8 +107,176 @@ const resetRatings = () => {
   </div>
 </template>
 
-<style>
+<script setup>
+import { ref, computed } from 'vue'
 
+// Жанры для multiple select
+const genres = ref([
+  { id: 1, name: 'Фэнтези' },
+  { id: 2, name: 'Антиутопия' },
+  { id: 3, name: 'Разработка' },
+  { id: 4, name: 'Sci-Fi' },
+  { id: 5, name: 'Детектив' },
+  { id: 6, name: 'Роман' },
+  { id: 7, name: 'Фантастика' },
+  { id: 8, name: 'Любовный роман' }
+])
+
+const books = ref([
+  {
+    id: 1,
+    title: 'Властелин колец',
+    desc: 'Эпическая сага',
+    genres: [1],
+    adult: false,
+    rating: 0,
+    cover_url: 'https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcR2RTlfu5uewJaMHUfBXesIlvZoOHWqDKkuFZy95NyLcIe57tgxwkDyOpuLIcZ9T0rJ8gF7lJjsi1Al91e_s8R-un6jRJ796A'
+  },
+  {
+    id: 2,
+    title: '1984',
+    desc: 'Антиутопия',
+    genres: [2],
+    adult: true,
+    rating: 0,
+    cover_url: 'https://imo10.labirint.ru/books/863652/cover.jpg/484-0'
+  },
+  {
+    id: 3,
+    title: 'Чистый код',
+    desc: 'Как писать код',
+    genres: [3],
+    adult: false,
+    rating: 0,
+    cover_url: 'https://ir.ozone.ru/s3/multimedia-1-5/c1000/7377225557.jpg'
+  },
+  {
+    id: 4,
+    title: 'Дюна',
+    desc: 'Космическая эпопея',
+    genres: [4],
+    adult: false,
+    rating: 0,
+    cover_url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbkfAb9cPkSWAF-zIZOFfNgiMdp7t3R_R9Wg&s'
+  },
+  {
+    id: 5,
+    title: 'Гарри Поттер',
+    desc: 'Школа волшебников',
+    genres: [1],
+    adult: false,
+    rating: 0,
+    cover_url: 'https://www.moscowbooks.ru/image/book/454/orig/i454685.jpg?cu=20180101000000'
+  }
+])
+
+const showForm = ref(false)
+const editingBookId = ref(null)
+const formData = ref({
+  title: '',
+  desc: '',
+  cover_url: '',
+  genre_ids: [],
+  adult: false
+})
+
+const hoverBookId = ref(null)
+const hoverRating = ref(0)
+
+const totalBooks = computed(() => books.value.length)
+const averageRating = computed(() => {
+  if (!books.value.length) return 0
+  const sum = books.value.reduce((acc, book) => acc + book.rating, 0)
+  return (sum / books.value.length).toFixed(1)
+})
+
+const getCoverColor = (coverUrl, id) => {
+  if (coverUrl) {
+    return `url(${coverUrl})`
+  }
+  const colors = ['#4A90E2', '#E74C3C', '#2ECC71', '#F39C12', '#9B59B6']
+  return colors[(id - 1) % 5]
+}
+
+const setRating = (book, stars) => {
+  book.rating = stars
+}
+
+const starEnter = (bookId, stars) => {
+  hoverBookId.value = bookId
+  hoverRating.value = stars
+}
+
+const starLeave = () => {
+  hoverBookId.value = null
+  hoverRating.value = 0
+}
+
+const openAddForm = () => {
+  editingBookId.value = null
+  formData.value = { title: '', desc: '', cover_url: '', genre_ids: [], adult: false }
+  showForm.value = true
+}
+
+const openEditForm = (book) => {
+  editingBookId.value = book.id
+  formData.value = {
+    title: book.title,
+    desc: book.desc,
+    cover_url: book.cover_url || '',
+    genre_ids: book.genres || [],
+    adult: book.adult
+  }
+  showForm.value = true
+}
+
+const saveBook = () => {
+  if (!formData.value.title.trim()) return
+
+  if (editingBookId.value) {
+    const bookIndex = books.value.findIndex(b => b.id === editingBookId.value)
+    if (bookIndex !== -1) {
+      books.value[bookIndex] = {
+        ...books.value[bookIndex],
+        title: formData.value.title,
+        desc: formData.value.desc,
+        cover_url: formData.value.cover_url,
+        genres: [...formData.value.genre_ids],
+        adult: formData.value.adult
+      }
+    }
+  } else {
+    books.value.push({
+      id: Date.now(),
+      title: formData.value.title,
+      desc: formData.value.desc,
+      cover_url: formData.value.cover_url,
+      genres: [...formData.value.genre_ids],
+      adult: formData.value.adult,
+      rating: 0
+    })
+  }
+  showForm.value = false
+}
+
+const closeForm = () => {
+  showForm.value = false
+}
+
+const removeBook = (book) => {
+  if (confirm(`Точно удалить "${book.title}"?`)) {
+    books.value = books.value.filter(b => b.id !== book.id)
+  }
+}
+
+const resetRatings = () => {
+  if (confirm('Обнулить все рейтинги?')) {
+    books.value.forEach(book => book.rating = 0)
+  }
+}
+</script>
+
+<style>
 .app {
   max-width: 1000px;
   margin: 0 auto;
@@ -242,12 +293,24 @@ const resetRatings = () => {
   border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .cover {
   height: 180px;
   position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.cover-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  opacity: 0.7;
 }
 
 .info {
@@ -260,7 +323,8 @@ h3 {
 
 .meta {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px;
   margin: 10px 0;
   font-size: 14px;
 }
@@ -279,12 +343,7 @@ h3 {
   border-radius: 10px;
 }
 
-.rating {
-  font-weight: bold;
-  color: #f1c40f;
-}
-
-/* добавил стили только для новых фич */
+/* Статистика */
 .stats {
   background: #f8f9fa;
   padding: 15px;
@@ -377,7 +436,8 @@ h3 {
   margin-top: 15px;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn,
+.delete-btn {
   flex: 1;
   padding: 8px;
   border: none;
@@ -396,13 +456,14 @@ h3 {
   color: white;
 }
 
+/* Форма */
 .form-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -438,6 +499,49 @@ h3 {
   box-sizing: border-box;
 }
 
+/* ГАЛОЧКА 18+ СПРАВА - ПРОСТО */
+.age-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.age-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: #dc3545;
+  flex-shrink: 0;
+}
+
+.age-checkbox label {
+  margin: 0;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+
+.cover-preview {
+  margin-top: 8px;
+}
+
+.preview-img {
+  max-width: 100px;
+  max-height: 120px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.genre-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  min-height: 150px;
+}
+
 .form-buttons {
   display: flex;
   gap: 10px;
@@ -460,27 +564,5 @@ h3 {
 .form-buttons button:last-child {
   background: #28a745;
   color: white;
-}
-
-/* 18+ и галочка СЛЕВА */
-.input-group:has(input[type="checkbox"]) {
-  display: flex;
-  align-items: center;
-  gap: 8px;  /* Отступ между текстом и галочкой */
-}
-
-.input-group:has(input[type="checkbox"]) input[type="checkbox"] {
-  margin: 0;
-  width: 18px;
-  height: 18px;
-  order: -1;  /* Галочка перед текстом */
-}
-
-/* Кнопки ПО ЦЕНТРУ */
-.form-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;  /* ← Выровнил по центру */
-  margin-top: 20px;
 }
 </style>

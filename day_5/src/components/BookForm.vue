@@ -61,14 +61,13 @@ watch(() => props.modelValue.title, (newTitle, oldTitle) => {
       />
     </div>
 
-    <div class="input-group">
-      <label>
-        <input 
-          type="checkbox" 
-          :checked="modelValue.adult" 
-          @change="updateField('adult', $event.target.checked)"
-        > 18+
-      </label>
+    <div class="age-checkbox">
+      <label>18+</label>
+      <input 
+        type="checkbox" 
+        :checked="modelValue.adult" 
+        @change="updateField('adult', $event.target.checked)"
+      />
     </div>
 
     <div class="form-buttons">
